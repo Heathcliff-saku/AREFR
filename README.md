@@ -47,6 +47,8 @@
 
 
 ## 二、网络训练和测试
+关于人脸识别网络搭建和训练测试流程，详细参考了 [Build-Your-Own-Face-Model](https://github.com/siriusdemon/Build-Your-Own-Face-Model)
+
 ### 2.1 受害模型
 在人脸识别的受害模型上, 项目目前支持四种模型的训练:
 
@@ -62,7 +64,7 @@
 backbone = 'fmobile'  # ['resnet', 'fmobile']
 metric = 'arcface'  # ['cosface', 'arcface']
 ```
-### 2.2 训练
+### 2.2 模型训练
 在终端内输入 
 ```python
 python train.py
@@ -88,7 +90,36 @@ python train.py -h
 ```python
 python train.py --backbone='fmobile' --epoch=2 --lr=0.001 
 ```
+### 2.3 模型测试
+目前只支持LFW基准测试，我们将在未来引入更多的测试基准
+> LFW(无约束自然场景人脸识别数据集)，该数据集由13000多张全世界知名人士互联网自然场景不同朝向、表情和光照环境人脸图片组成，共有5000多人，其中有1680人有2张或2张以上人脸图片。每张人脸图片都有其唯一的姓名ID和序号加以区分。
 
+在LFW随机选取测试对6000对，进行模型测试，请运行
+```python
+python test.py
+```
+
+## 三、如何运行AREFR人脸识别系统
+
+### 3.1 构建自己的面部特征库 
+
+训练完成后的人脸识别模型可以将不同的用户面部输出为 余弦距离值较大的特征向量，为了实现本地的人脸识别，需要首先构建好面部特征库
+
+为此，我们提供了照片采集的脚本`take_picture.py`
+
+假设现在需要采集某个用户的面部图像，首先，在`conf.py`内修改`name`参数为该用户的姓名标识（如'rsw'）
+
+有两种方法进行人脸采集
+
+- 使用摄像头(默认)：定义完`name`后，运行以下命令，按下t进行拍摄捕获人脸
+```python
+python take_picture.py
+```
+- 传入照片(修改`conf.py`内的`use_cam`)：将`face_img`改为图像的地址，并运行
+```python
+python take_picture.py
+```
+之后，捕获并裁剪后的面部图像将存入 `./data/facebank/name` 中
 
 3.9 ~ 3.18 Nerf 及仿真平台调研
 

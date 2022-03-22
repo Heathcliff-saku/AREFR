@@ -1,3 +1,4 @@
+import imp
 import os
 import os.path as osp
 
@@ -14,11 +15,11 @@ from imutils import face_utils
 
 from config import Config as conf
 from model import FaceMobileNet
-from take_picture import FaceDetect  # 检测人脸
 from utils import PILImage2CV, CVImage2PIL  # 图像格式转换
 from utils import save_dict, load_dict
 
 from torchvision.datasets import ImageFolder
+from face_detect import GetFaceCoord, FaceDetect
 
 """ 实现人脸识别功能
 1、计算facebank(用于搜索比对的标准人脸)中的脸部特征，并保存为特征库
@@ -35,11 +36,6 @@ from torchvision.datasets import ImageFolder
 2022.2.16 实现视频实时计预测（对cpu能力要求较高）
 
  """
-
-if conf.face_detector == "opencv_haar":
-    face_detector = face_detector = cv.CascadeClassifier("./face_detect_feature/haarcascades/haarcascade_frontalface_default.xml")
-else:
-    face_detector = dlib.get_frontal_face_detector()
 
 
 def cosin_metric(x1, x2):
@@ -75,21 +71,6 @@ def make_dict(facebank_root, model, transform, device):
     save_dict(feature_dict)
     return feature_dict
 
-def GetFaceCoord(img, face_detector):
-
-    if conf.face_detector == "opencv_haar":
-        gray_img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-        face = face_detector.detectMultiScale(gray_img, 1.2, 5)
-        x = face[0, :][0]
-        y = face[0, :][1]
-        w = face[0, :][2]
-        h = face[0, :][3]
-        return x, y, w, h
-    else:
-        face_Gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-        boundary = face_detector(face_Gray, 1)
-        (x, y, w, h) = face_utils.rect_to_bb(boundary[0])
-        return x, y, w, h
 
 def picture_recognition():
     begin_time = datetime.now()
@@ -184,8 +165,9 @@ def video_recognition(window_name):
         cv.putText(frame, 'Top-1 Result: ' + pred_name, (10, 500), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 55, 255), 2)
         cv.putText(frame, 'similarity: ' + str(best_score), (10, 550), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 55, 255), 2)
         try:
-            x, y, w, h = GetFaceCoord(frame, face_detector)
+            x, y, w, h = GetFaceCoord(frame)
             cv.rectangle(frame, (x, y), (x+w, y+h), (55, 255, 155), 2)
+            cv.putText(frame, pred_name, (x,y), (55, 255, 155), 2)
         except:
             print('no face detected, please try again')
 

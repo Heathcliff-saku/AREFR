@@ -3,11 +3,14 @@ import os
 import os.path as osp
 from pathlib import Path
 from datetime import datetime
+
+from sympy import im
 from config import Config as conf
 import sys
 import dlib
 from imutils import face_utils
 
+from face_detect import FaceDetect
 """
 实现从摄像头获取面部图像 实现自动裁剪、自动保存的功能
 1、用于制作自己的数据集
@@ -32,29 +35,6 @@ def SavePicture(img):
     cv.imwrite(str(save_path / '{}.jpg'.format(str(idx+1))), img)
     print('one picture has saved')
 
-
-def FaceDetect(size, img):
-    """ 实现人脸检测和裁剪 """
-    if conf.face_detector == "opencv_haar":
-        face_detector = face_detector = cv.CascadeClassifier("./face_detect_feature/haarcascades/haarcascade_frontalface_default.xml")
-        gray_img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-        face = face_detector.detectMultiScale(gray_img, 1.2, 5)
-        print(face[0, :])
-        x = face[0, :][0]
-        y = face[0, :][1]
-        w = face[0, :][2]
-        h = face[0, :][3]
-        img = img[y:y+h, x:x+w]
-        face_img = cv.resize(img, size, interpolation=cv.INTER_CUBIC)
-        return face_img
-    else:
-        face_detector = dlib.get_frontal_face_detector()
-        face_Gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-        boundary = face_detector(face_Gray, 1)
-        (x, y, w, h) = face_utils.rect_to_bb(boundary[0])
-        img = img[y:y+h, x:x+w]
-        face_img = cv.resize(img, size, interpolation=cv.INTER_CUBIC)
-        return face_img
 
 
 def OpenCam(window_name, viedo_id):
