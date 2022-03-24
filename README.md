@@ -5,6 +5,29 @@
 该文档为 人脸识别对抗鲁棒性评估平台(AREFR) 的中期报告暨解释性文档(中文版)，我们旨在向使用者说明该工程的所有功能，并且方便之后的扩展开发
 
 >开发者:  西安电子科技大学人工智能学院 *Silvester_Ruan、LYC* 
+## 零、安装AREFR及相关环境
+
+0.1、克隆项目到本地：
+```
+git clone https://github.com/Heathcliff-saku/AREFR.git
+```
+0.2、新建conda虚拟环境 并激活：
+```
+conda create -n AREFR python=3.9
+Linux:  source activate AREFR
+Windows: activate AREFR
+```
+0.3、安装依赖库：
+```
+pip install -r requirements.txt
+```
+0.4、安装 pytorch -gpu 版本(注意您的电脑CUDA版本)
+
+项目采用torch 1.10 CUDA 11.2版本
+
+```
+访问 https://pytorch.org/get-started/locally/ 安装合适的torch版本
+```
 
 ## 一、工程文件结构
 该项目主要关注人脸识别模型下的对抗鲁棒性测试， 并且着重关注物理场景下的模型鲁棒性。主要由人脸识别模型、攻击算法、评估代码、其他工具性的脚本组成，以下是工程文件内各个脚本的说明:
