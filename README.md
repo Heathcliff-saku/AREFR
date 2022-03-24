@@ -121,8 +121,61 @@ python take_picture.py
 ```
 之后，捕获并裁剪后的面部图像将存入 `./data/facebank/name` 中
 
-3.9 ~ 3.18 Nerf 及仿真平台调研
 
-3.18 跑通Nerf
+### 3.2 运行人脸识别系统 
 
-3.25 收集沙盘数据，跑通Nerf
+在完成图像采集后，运行 `demo.py` 文件，若facebank存在新的用户，请修改 `conf.py` 内的 `update_feature_dict = True` 。此时运行demo程序将首先更新facebank内用户的特征库信息。接下来便可看见人脸识别系统的图形化界面。
+
+> PS：算法默认采取每帧图像并实时计算，这将消耗大量的计算能力。若用户的CPU性能较弱，可以修改 `conf.py` 内的 `is_realtime = False` 。此时系统将不开启实时计算，通过按键 `t` 捕获一帧图像进行检测
+
+## 四、数字环境下的人脸识别系统攻防
+### 4.1 生成单张人脸对抗样本
+目前提供5种针对白盒模型的攻击算法：
+- *[Goodfellow et al.]*:  FGSM (Fast Gradient Sign Method)
+- *[Kurakin et al.]* : BIM (Basic Iterative Method)
+- *[Dong et al.]*: MIM (Momentum Iterative Method)
+- *[Madry et al.]*: PGD (Projected Gradient Descent)
+- *[Carlini et al.]*: C&W (Carlini & Wagner Attack)
+
+以及主要针对黑盒模型的攻击算法：
+- *[Dong et al.]*: Evolutionary Attack
+
+`attack_example.py` 提供了生成单张面部对抗样本的案例
+
+1、指定采用某种攻击算法:
+```python
+attack_method = FacePGD(victim_model)
+```
+六种算法对应的类名称为：`FaceFGSM` `FaceBIM`  `FaceMIFGSM` `FacePGD` `FaceCW` `Evolutionary` 
+
+2、生成单张对抗样本：
+```python
+digtal_single_test(input_x_root, target_x_root, attack_method, victim_model)
+```
+
+3、您也可以直接修改 `attack_example.py` 的以下部分并运行：
+```python
+if mode == 'digtal':
+        """
+        digtal attack flow
+        you first need Specify attack method
+        """
+        attack_method = FacePGD(victim_model)
+        # attack_method = FaceCW(victim_model)
+        # attack_method = FaceFGSM(victim_model)
+        # attack_method = FaceBIM(victim_model)
+        # attack_method = FaceMIFGSM(victim_model)
+        # attack_method = Evolutionary(victim_model)
+
+        """ then give the root of input and attack target """
+        input_x_root = './data/facebank/rsw/1.jpg'  # true: rsw
+        target_x_root = './data/facebank/Yao_Ming/Yao_Ming_0001.jpg'  # target: zqy
+        digtal_single_test(input_x_root, target_x_root, attack_method, victim_model)
+```
+
+### 4.2 人脸识别模型鲁棒性评估：
+批量生成对抗样本，并针对模型的鲁棒性进行评估。
+采用LFW数据集中的6000个不同面部样本对进行模仿攻击：
+运行 `attack_evaluate.py` 
+
+指定攻击算法部分与4.1描述一致
