@@ -90,6 +90,28 @@ def PlotSigleResult(adv_x, x, target):
    plt.imshow(target.cpu().detach().numpy(), cmap='gray')
    plt.show()
 
+def PlotSigleResult_phy(adv_x, x, target, patch):
+   """
+   绘制攻击结果的四宫格图，输入均为PIL格式的二维数组
+   """
+   plt.figure()
+   plt.subplot(2, 2, 1)
+   plt.imshow(adv_x, cmap='gray')
+   plt.title("adv_img")
+
+   plt.subplot(2, 2, 2)
+   plt.imshow(x.cpu().detach().numpy(), cmap='gray')
+   plt.title("origin_img")
+
+   plt.subplot(2, 2, 4)
+   pertubation = patch
+   plt.title("pertubation")
+   plt.imshow(pertubation, cmap='gray')
+
+   plt.subplot(2, 2, 3)
+   plt.title("Attack_target")
+   plt.imshow(target.cpu().detach().numpy(), cmap='gray')
+   plt.show()
 
 if __name__ == '__main__':
     data = 'D:/CASIA-WebFace/'

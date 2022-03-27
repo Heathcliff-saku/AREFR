@@ -4,18 +4,19 @@ import torch.nn as nn
 import numpy as np
 from PIL import Image
 import os
+import cv2 as cv 
 
 
 from Attack import FacePGD
 from Attack import FaceCW
 from Attack.FGSM import FaceFGSM, FaceBIM, FaceMIFGSM
 from Attack import Evolutionary
-from Attack import AdvGlass
+from Attack import PyhAttack
 
 from model import FaceMobileNet
 from config import Config as conf
 from datetime import datetime
-from utils import load_dict, PlotSigleResult
+from utils import load_dict, PlotSigleResult, PlotSigleResult_phy
 
 def cosin_metric(x1, x2):
     return np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2))
@@ -78,28 +79,21 @@ def digtal_single_test(input_x_root, target_x_root, attack_method, model):
 
     PlotSigleResult(x_adv[0, 0, :, :], input_x[0, 0, :, :], target_x[0, 0, :, :])
 
+
 def physical_single_test(input_x_root, target_x_root, attack_method, model):
-    x_batch = torch.zeros(size=(5, 1, 128, 128))
-    n = 0
-    for img in os.listdir(input_x_root):
-        input_x = Image.open(input_x_root + img)
-        input_x = conf.test_transform(input_x)
-        # input_x = input_x[:, None, :, :]
-        x_batch[n, :, :, :] = input_x
-        n += 1
+    x_for_mask = cv.imread(input_x_root)
+    x_for_mask = cv.cvtColor(x_for_mask, cv.COLOR_BGR2GRAY)
+
+    input_x = Image.open(input_x_root)
+    input_x = conf.test_transform(input_x)
+    input_x = input_x[:, None, :, :]
 
     target_x = Image.open(target_x_root)
     target_x = conf.test_transform(target_x)
     target_x = target_x[:, None, :, :]
 
-    x_adv, pertubation = attack_method.generate(x_batch, target_x)
-    # x_adv.shape = (5, 1, 128, 128)
-    x_adv = x_adv[0, :, :, :]
-    x_adv = x_adv[None, :, :, :]
+    x_adv, pertubation, patch = attack_method.generate(input_x, target_x, x_for_mask)
     x_adv_tensor = torch.Tensor(x_adv).to(torch.device("cuda"))
-
-    input_x = x_batch[0, :, :, :]
-    input_x = input_x[None, :, :, :]
     input_x_tensor = input_x.to(torch.device("cuda"))
 
     pred_name, best_score, scores = picture_recognition(model, input_x_tensor)
@@ -120,7 +114,7 @@ def physical_single_test(input_x_root, target_x_root, attack_method, model):
     else:
         print('failed Attack')
 
-    PlotSigleResult(x_adv[0, 0, :, :], input_x[0, 0, :, :], target_x[0, 0, :, :])
+    PlotSigleResult_phy(x_adv[0, 0, :, :], input_x[0, 0, :, :], target_x[0, 0, :, :], patch[0, 0, :, :])
 
 
 
@@ -132,7 +126,7 @@ if __name__ == '__main__':
     victim_model.load_state_dict(state_dict)
     victim_model.eval()
 
-    mode = 'digtal' # 'digtal' or 'Physical'
+    mode = 'Physical' # 'digtal' or 'Physical'
 
     if mode == 'digtal':
         """
@@ -156,15 +150,15 @@ if __name__ == '__main__':
         Physical environment attack flow
         you first need Specify attack method
         """
-        attack_method = AdvGlass(victim_model)
+        attack_method = PyhAttack(victim_model)
 
         """ 
         then give the root of input and attack target
         input: a batch of image [n, 1, 128, 128]
         target: one image of target [1, 128, 128]
         """
-        input_x_root = './data/facebank/rsw/'
-        target_x_root = './data/facebank/Yao_Ming/Yao_Ming_0001.jpg'
+        input_x_root = './data/facebank/rsw/1.jpg'
+        target_x_root = './data/facebank/Zhang_Qiyang/1.jpg'
 
         # use single_test() to generate one attack result
 
