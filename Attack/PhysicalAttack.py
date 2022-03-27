@@ -106,7 +106,7 @@ class PyhAttack(nn.Module):
     Author: Silvester_Ruan  1290481944@qq.com
             School of Artificial Intelligence, xidian university
     """
-    def __init__(self, model, eps=100000, a=0.1, interate=3000, random_star=True, distance=False, clip_min=-1.0, clip_max=1.0, flag_target=True):
+    def __init__(self, model, eps=100000, a=0.1, interate=500, random_star=True, distance=False, clip_min=-1.0, clip_max=1.0, flag_target=True):
         """
         :param model:       The victim model(Only support nn.Model)
         :param eps:         The upper bound of the disturbance
@@ -154,7 +154,7 @@ class PyhAttack(nn.Module):
         embedding_target = self.model(target).squeeze()
 
         # x : tensor [1, 1, 128, 128]
-        Mask_x = BuiltMask(x_for_mask, 'glass')
+        Mask_x = BuiltMask(x_for_mask, 'mask')
         # mask : tensor [1, 1, 128, 128]
 
         for i in range(self.interate):
