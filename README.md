@@ -11,8 +11,8 @@
 
 
 <center class="half">
-<img src="./md/2.png" width=400/>
-<img src="./md/1.png" width=384.5/>
+<img src="./md/2.png" width=200/>
+<img src="./md/1.png" width=193/>
 </center>
 
 
